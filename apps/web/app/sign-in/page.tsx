@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "../../lib/api";
+import { demoLogin, login, storedToken } from "../../lib/api";
 import { Button, Field, Panel, inputStyle } from "../../components/fc/ui";
 
 export default function SignInPage() {
@@ -11,6 +11,26 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  async function enter() {
+    setError(null);
+    setBusy(true);
+    try {
+      await demoLogin();
+      router.push("/app");
+    } catch (e: any) {
+      setError(e?.message ?? "Demo sign-in failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Demo bypass: /sign-in?demo=1 skips the form entirely (still a real session).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("demo") === "1" && !storedToken()) void enter();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function submit() {
     setError(null);
@@ -97,6 +117,17 @@ export default function SignInPage() {
               {busy ? "Signing in…" : "Sign in"}
             </Button>
           </form>
+          <div style={{ marginTop: 14, border: "1px solid var(--fc-border)", borderRadius: 6, padding: "10px 12px", background: "var(--fc-bg-2)" }}>
+            <div style={{ fontSize: 11.5, color: "var(--fc-text-2)", marginBottom: 8 }}>
+              Demo mode: skip the form and enter the control room as the manufacturer identity (dev@ardane.example). Same real API session — only the UI shortcut is bypassed.
+            </div>
+            <Button type="button" full variant="primary" disabled={busy} onClick={() => void enter()}>
+              {busy ? "Entering…" : "Continue as demo →"}
+            </Button>
+            <div className="mono" style={{ fontSize: 11, color: "var(--fc-text-2)", marginTop: 8 }}>
+              or open <a href="/sign-in?demo=1">/sign-in?demo=1</a> for a frictionless shareable link
+            </div>
+          </div>
           <div style={{ fontSize: 11.5, color: "var(--fc-text-2)", marginTop: 16 }}>
             Authenticated sessions are required for all governance decisions. Actions are attributed
             to your organisation and appended to the tamper-evident audit chain.

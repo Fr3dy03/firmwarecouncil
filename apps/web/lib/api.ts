@@ -90,6 +90,11 @@ export function logout() {
   clearSession();
 }
 
+/** One-click demo access (keeps the real API session flow, skips the form). */
+export async function demoLogin(): Promise<{ token: string; user: SessionUser }> {
+  return login("dev@ardane.example", "maker-demo-pass");
+}
+
 /** Session hook with silent revalidation against /auth/me. */
 export function useSession() {
   const [state, setState] = useState<{ loading: boolean; user: SessionUser | null }>({
