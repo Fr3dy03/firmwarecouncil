@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "comment": "FirmwareCouncil web deployment. Root Directory = apps/web on Vercel; API is proxied via the /api/v1/:path* rewrite in apps/web/next.config.mjs (FC_API_URL env var).",
   "installCommand": "npm install",
   "buildCommand": "npm run build --workspace=@fc/shared && npm run build --workspace=@fc/web",
   "outputDirectory": "apps/web/.next"
