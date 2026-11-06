@@ -1,0 +1,32 @@
+{
+  "name": "firmwarecouncil",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FirmwareCouncil — multi-party firmware release approval and staged deployment governance, built on BOT Chain.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:shared": "npm run build -w @fc/shared",
+    "install:contracts": "forge install --root contracts",
+    "test:contracts": "forge test",
+    "dev:api": "npm run dev -w @fc/api",
+    "dev:web": "npm run dev -w @fc/web",
+    "dev": "concurrently -n api,web -c navy,blue \"npm run dev:api\" \"npm run dev:web\"",
+    "seed": "npm run seed -w @fc/api",
+    "e2e": "node --import tsx apps/api/scripts/e2e.mts",
+    "test:api": "node --import tsx apps/api/scripts/test-all.mts",
+    "test:sim": "node --import tsx packages/device-sim/test/sim.test.mts",
+    "test": "npm run test:api && npm run test:sim"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.0"
+  }
+}

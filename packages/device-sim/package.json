@@ -1,0 +1,13 @@
+{
+  "name": "@fc/device-sim",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Device reference agent + fleet simulator for FirmwareCouncil (security validation harness).",
+  "scripts": {
+    "sim": "tsx src/main.mts"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}

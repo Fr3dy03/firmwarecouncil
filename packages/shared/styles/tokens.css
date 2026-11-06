@@ -1,0 +1,24 @@
+/* FirmwareCouncil design tokens (imported by both marketing + app). */
+:root {
+  --fc-bg: #F1F4F6;
+  --fc-surface: #FFFFFF;
+  --fc-navy: #172536;
+  --fc-slate: #34485A;
+  --fc-text: #24313B;
+  --fc-text-2: #71808B;
+  --fc-blue: #286C9B;
+  --fc-pale-blue: #E8F0F6;
+  --fc-green: #348467;
+  --fc-orange: #ED8738;
+  --fc-pale-orange: #FFF0E3;
+  --fc-red: #C74743;
+  --fc-border: #D6DFE5;
+
+  --fc-font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --fc-font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  --fc-radius-card: 6px;
+  --fc-radius-control: 4px;
+  --fc-shadow-1: 0 1px 2px rgba(23,37,54,.08), 0 1px 1px rgba(23,37,54,.04);
+  --fc-shadow-2: 0 4px 14px rgba(23,37,54,.10);
+}

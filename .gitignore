@@ -1,0 +1,26 @@
+# dependencies / builds
+node_modules/
+.next/
+out/
+cache/
+
+# secrets — never commit
+.env
+.env.local
+*.key
+
+# runtime state
+apps/api/data/db.json
+apps/data/
+*.log
+
+# build outputs
+packages/shared/dist/
+
+# foundry / forge build artifacts (ReleaseGovernance.json is re-buildable with `forge build`)
+contracts/cache/
+contracts/out/ProbeDomain.sol/
+
+# OS noise
+Thumbs.db
+.DS_Store

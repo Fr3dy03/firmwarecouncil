@@ -1,0 +1,260 @@
+/**
+ * Prisma schema for production Postgres persistence.
+ * The dev-mode JsonStore in `apps/api/src/services/store.mts` implements the
+ * identical Storage interface over collections named after these models.
+ * Point `DATABASE_URL` at Postgres to switch (see docs/ARCHITECTURE.md §6).
+ */
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organisation {
+  id            String   @id @default(uuid())
+  name          String
+  type          String   // MANUFACTURER | OPERATOR | SECURITY | PLATFORM
+  vendorAddress String?
+  createdAt     DateTime @default(now())
+  users         User[]
+  members       OrganisationMember[]
+  productLines  ProductLine[]
+  fleets        DeviceFleet[]
+  keys          SigningKey[]
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  name           String
+  role           String   // MANUFACTURER | SECURITY_REVIEWER | OPERATOR | PLATFORM_ADMIN
+  organisationId String
+  passwordHash   String
+  passwordSalt   String
+  createdAt      DateTime @default(now())
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+}
+
+model OrganisationMember {
+  id             String   @id @default(uuid())
+  organisationId String
+  userId         String
+  role           String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+}
+
+model ProductLine {
+  id                     String   @id @default(uuid())
+  organisationId         String
+  name                   String
+  productName            String
+  defaultArchitecture    String
+  bootloaderRequirements String
+  otaProviderId          String?
+  compatibilityPolicy    String
+  supportedFirmwareVersions String[]
+  createdAt              DateTime @default(now())
+  active                 Boolean  @default(true)
+  organisation           Organisation @relation(fields: [organisationId], references: [id])
+  hardwareRevisions      HardwareRevision[]
+  releases               Release[]
+}
+
+model HardwareRevision {
+  id                    String @id @default(uuid())
+  productLineId         String
+  revision              String
+  architecture          String
+  bootloaderRequirement String
+  createdAt             DateTime @default(now())
+  productLine           ProductLine @relation(fields: [productLineId], references: [id])
+}
+
+model Release {
+  id                String   @id @default(uuid())
+  productLineId     String
+  organisationId    String
+  status            String
+  version           String
+  buildIdentifier   String
+  artifactDigestSha256 String
+  artifactSizeBytes Int
+  artifactUrl       String
+  manifestDigest    String
+  createdAt         DateTime @default(now())
+  productLine       ProductLine  @relation(fields: [productLineId], references: [id])
+  manifest          ReleaseManifest?
+  approvals         ReleaseApproval[]
+  rolloutPolicy     RolloutPolicy?
+  receipts          InstallationReceipt[]
+  incidents         Incident[]
+}
+
+model ReleaseManifest {
+  id                    String  @id @default(uuid())
+  releaseId             String  @unique
+  release               Release @relation(fields: [releaseId], references: [id])
+  securityNotes         String
+  productCompatibility  String
+  previousReleaseId     String?
+  targetRevisions       String[]
+}
+
+model ReleaseApproval {
+  id                       String @id @default(uuid())
+  releaseId                String
+  approveUserId            String
+  approveOrganisationId    String
+  governanceRole           String // SECURITY_REVIEWER | OPERATOR
+  decision                 String // APPROVE | REJECT | REQUEST_CHANGES
+  timestamp                DateTime @default(now())
+  signatureDigest          String
+  comments                 String
+  release                  Release @relation(fields: [releaseId], references: [id])
+}
+
+model SigningKey {
+  id             String  @id @default(uuid())
+  organisationId String
+  label          String
+  publicKey      String
+  fingerprint    String
+  productScope   String[]
+  state          String   // ACTIVE | ROTATING | REVOKED | EXPIRED
+  validFrom      DateTime @default(now())
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+  rotatedFrom    String?
+  notes          String?
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+}
+
+model RolloutPolicy {
+  id                        String  @id @default(uuid())
+  releaseId                 String  @unique
+  release                   Release @relation(fields: [releaseId], references: [id])
+  canaryCohortSize          Int
+  requiresManualAdvance     Boolean @default(true)
+  rollbackTargetReleaseId   String?
+  createdAt                 DateTime @default(now())
+  stages                    RolloutStage[]
+}
+
+model RolloutStage {
+  id                        String @id @default(uuid())
+  rolloutPolicyId           String
+  rolloutPolicy             RolloutPolicy @relation(fields: [rolloutPolicyId], references: [id])
+  order                     Int
+  kind                      String  // CANARY | SMALL | MEDIUM | LARGE | FULL
+  targetPercent             Int
+  minDwellMinutes           Int
+  requiresManualAdvance     Boolean @default(true)
+  autoHaltOnFailurePercent  Int     @default(10)
+}
+
+model DeviceFleet {
+  id             String @id @default(uuid())
+  organisationId String
+  name           String
+  productLineId  String
+  createdAt      DateTime @default(now())
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  devices        Device[]
+}
+
+model Device {
+  id                  String  @id @default(uuid())
+  fleetId             String
+  fleet               DeviceFleet @relation(fields: [fleetId], references: [id])
+  deviceRef           String
+  hardwareRevisionId  String
+  productLineId       String
+  lastSeenAt          DateTime?
+  status              String    // ONLINE | OFFLINE | OUTDATED | FAILED_UPTAKE | RETIRED
+  activeVersion       String?
+  lastVerifiedVersion String?
+  receipts            InstallationReceipt[]
+}
+
+model InstallationReceipt {
+  id                    String @id @default(uuid())
+  releaseId             String
+  deviceId              String
+  outcome               String // SUCCESS | FAILURE | PENDING | REJECTED
+  version               String
+  artifactDigestSha256  String
+  failureReason         String?
+  deviceSignature       String
+  receivedAt            DateTime @default(now())
+  batchId               String?
+  onChainCommitTx       String?
+  release               Release @relation(fields: [releaseId], references: [id])
+  device                Device  @relation(fields: [deviceId], references: [id])
+}
+
+model Incident {
+  id                     String  @id @default(uuid())
+  releaseId              String
+  release                Release @relation(fields: [releaseId], references: [id])
+  organisationId         String
+  severity               String  // LOW | MEDIUM | HIGH | CRITICAL
+  status                 String  // OPEN | MITIGATING | RESOLVED
+  title                  String
+  failureReason          String
+  responsibleEngineerId  String?
+  correctiveAction       String?
+  evidenceLinks          String[]
+  openedAt               DateTime @default(now())
+  resolvedAt             DateTime?
+  comments               IncidentComment[]
+}
+
+model IncidentComment {
+  id          String   @id @default(uuid())
+  incidentId  String
+  incident    Incident @relation(fields: [incidentId], references: [id])
+  authorUserId String
+  body        String
+  createdAt   DateTime @default(now())
+}
+
+model OTAIntegration {
+  id             String @id @default(uuid())
+  organisationId String
+  kind           String  // simulator | mender | hawkbit | balena
+  label          String
+  baseUrl        String
+  credentialRef  String
+  verified       Boolean @default(false)
+  createdAt      DateTime @default(now())
+}
+
+model Transaction {
+  id                String  @id @default(uuid())
+  hash              String? @unique
+  chainId           Int
+  blockNumber       Int?
+  blockHash         String?
+  status            String  // PENDING | SUCCESS | FAILED
+  method            String
+  entityId          String
+  createdAt         DateTime @default(now())
+}
+
+model AuditLog {
+  id                   String  @id @default(uuid())
+  sequence             Int     @unique
+  timestamp            DateTime @default(now())
+  actorUserId          String?
+  actorOrganisationId  String?
+  kind                 String
+  entity               String
+  detail               String
+  prevHash             String?
+  hash                 String?
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@fc/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./types": "./dist/types.js",
+    "./types.ts": "./src/types.ts",
+    "./workflow": "./dist/workflow.js",
+    "./workflow.ts": "./src/workflow.ts",
+    "./chain": "./dist/chain.js",
+    "./tokens.css": "./styles/tokens.css",
+    "./styles/tokens.css": "./styles/tokens.css"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

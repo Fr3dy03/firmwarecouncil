@@ -1,0 +1,21 @@
+{
+  "name": "@fc/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FirmwareCouncil backend — Fastify REST API for release governance.",
+  "scripts": {
+    "dev": "tsx watch src/server.mts",
+    "start": "tsx src/server.mts",
+    "seed": "tsx scripts/seed.mts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "fastify": "^5.2.1",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

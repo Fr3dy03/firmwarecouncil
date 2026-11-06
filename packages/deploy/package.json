@@ -1,0 +1,15 @@
+{
+  "name": "@fc/deploy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Knowledge of BOT Chain configuration and deployment tooling for FirmwareCouncil governance contracts.",
+  "scripts": {
+    "check": "tsx src/check.mts",
+    "deploy": "tsx src/deploy.mts",
+    "deploy:forge": "cd ../../contracts && forge script script/Deploy.s.sol --rpc-url https://rpc.bohr.life --broadcast"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}
