@@ -567,9 +567,11 @@ export default function ReleaseDetailPage() {
                 {(detail.transactions ?? []).length === 0 ? (
                   <p style={{ fontSize: 12.5, color: "var(--fc-text-2)" }}>No on-chain transactions recorded yet.</p>
                 ) : (
-                  (detail.transactions ?? []).slice(-5).reverse().map((t) => (
-                    <KV key={t.id} k={t.kind} v={<><span className="mono">{t.hash ?? "(pending)"}</span> · {t.status}</>} />
-                  ))
+                  <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                    {(detail.transactions ?? []).slice().reverse().map((t) => (
+                      <KV key={t.id} k={t.kind} v={<><span className="mono">{t.hash ?? "(pending)"}</span> · {t.status}</>} />
+                    ))}
+                  </div>
                 )}
               </Panel>
             </div>
